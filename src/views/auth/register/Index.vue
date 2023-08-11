@@ -57,16 +57,17 @@ export default {
             'tel': ['required'],
         })
         this.form.setMasks({
-            'tel': '****',
+            'tel': '+7(000)000-00-00',
         });
     },
     methods: {
         register() {
             if (this.form.validate()) {
+                console.log("yes")
                 // this.setEmail(this.$store.state.formValues.formRegister.email);
-                setIsAuthenticated(true).then(() => {
-                    this.$router.push({ name: 'payments' });
-                });
+                // setIsAuthenticated(true).then(() => {
+                //     this.$router.push({ name: 'payments' });
+                // });
             } else {
                 console.log("no")
             }
