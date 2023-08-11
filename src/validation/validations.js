@@ -35,14 +35,13 @@ const required = (values, name, param) => {
   }
 };
 const maskFilled = (values, name, param) => {
-  const value = values[name];
+  const value = values;
   const mask = param;
 
   const maskedValue = mask.replace(/#/g, '_');
   const sanitizedValue = value.replace(/_/g, '');
-
   if (sanitizedValue.length !== maskedValue.length) {
-    return false; 
+    return false;
   } else {
     return true;
   }

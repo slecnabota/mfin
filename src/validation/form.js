@@ -8,7 +8,7 @@ class Form {
     rules = {};
     masks = {};
     generateRandomId() {
-        return Math.random().toString(36).substring(2, 15); // Генерирует строку длиной 13 символов
+        return Math.random().toString(36).substring(2, 15);
     }
 
     init(values) {
@@ -79,17 +79,19 @@ class Form {
                     }
                 }
             }
+            let resultMask = true;
             if (this.masks[name]) {
-                if (!validations.maskFilled(this.getStore().formValues[this.formName], name, this.getMask(name))) {
-                    result = false;
+                if (!validations.maskFilled(this.applyMask(name, this.get(name)), name, this.getMask(name))) {
+                    resultMask = false;
                     if (!this.getStore().formErrors[this.formName][name]) {
                         this.getStore().formErrors[this.formName][name] = [];
                     }
                     const message = config.messages.mask || 'Error';
                     this.getStore().formErrors[this.formName][name].push(message);
+                    console.log('efjwkjfioejio')
+                    console.log("resultat")
                 }
             }
-
         }
         return result;
     }
