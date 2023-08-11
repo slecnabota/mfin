@@ -1,78 +1,98 @@
-import IMask from 'imask'
-import * as validations from './validations.js'
-import config from '../config/formConfig.js'
-import store from '../store/index.js'
+import IMask from 'imask';
+import * as validations from './validations.js';
+import config from '../config/formConfig.js';
+import store from '../store/index.js';
 
 class Form {
-  formName = 'default'
-  rules = {}
-  masks = {}
-  setMask(masks) {
-    this.masks = { ...masks };
-  }
-
-  getMask(name) {
-    return this.masks[name] || null;
-  }
-  applyMask(name, value) {
-    const mask = this.getMask(name);
-    if (mask) {
-      return IMask.createMask({ mask }).resolve(value);
+    formName = '';
+    rules = {};
+    masks = {};
+    generateRandomId() {
+        return Math.random().toString(36).substring(2, 15); // Генерирует строку длиной 13 символов
     }
-    return value;
-  }
-  setRules(rules) {
-    this.rules = { ...rules };
-  }
 
-  init(values, formName = 'default') {
-    this.formName = formName
-    store.commit("setValues", { formName: this.formName, values })
-  }
-
-  get(name = null) {
-    if (name === null) {
-      return store.state.formValues[this.formName];
+    init(values) {
+        this.formName = this.generateRandomId();
+        store.commit("setValues", { formName: this.formName, values });
     }
-    return store.state.formValues[this.formName][name];
-  }
 
-  set(name, value) {
-    store.state.formValues[this.formName][name] = value;
-  }
+    setRules(rules) {
+        this.rules = { ...rules };
+    }
 
-  input(name) {
-    return config.input(name, this, store)
-  }
+    getStore() {
+        return store.state;
+    }
 
-  validate() {
-    let result = true;
-    store.state.formErrors[this.formName] = {};
-    for (const name in store.state.formValues[this.formName]) {
-      const rules = this.rules[name];
-      if (rules && rules.length) {
-        for (const rule of rules) {
-          const ruleSplit = rule.split(':');
-          const ruleName = ruleSplit[0];
-          const ruleParam = ruleSplit[1];
-          const validation = validations[ruleName];
-          if (validation) {
-            if (!validation(store.state.formValues[this.formName], name, ruleParam)) {
-              result = false;
-              if (!store.state.formErrors[this.formName][name]) {
-                store.state.formErrors[this.formName][name] = [];
-              }
-              const message = config.messages[ruleName] || 'Error';
-              store.state.formErrors[this.formName][name].push(message)
-            }
-          } else {
-            console.error('Validation with name `' + ruleName + '` was not found');
-          }
+    get(name = null) {
+        if (name === null) {
+            return this.getStore().formValues[this.formName];
         }
-      }
+        return this.getStore().formValues[this.formName][name];
     }
-    return result;
-  }
+
+    set(name, value) {
+        this.getStore().formValues[this.formName][name] = value;
+    }
+    setMasks(masks) {
+        this.masks = { ...masks };
+    }
+
+    getMask(name) {
+        return this.masks[name] || null;
+    }
+
+    applyMask(name, value) {
+        const mask = this.getMask(name);
+        if (mask) {
+            const maskInstance = IMask.createMask({ mask });
+            return maskInstance.resolve(value);
+        }
+        return value;
+    }
+
+    input(name) {
+        return config.input(name, this);
+    }
+    validate() {
+        let result = true;
+        this.getStore().formErrors[this.formName] = {};
+        for (const name in this.getStore().formValues[this.formName]) {
+            const rules = this.rules[name];
+            if (rules && rules.length) {
+                for (const rule of rules) {
+                    const ruleSplit = rule.split(':');
+                    const ruleName = ruleSplit[0];
+                    const ruleParam = ruleSplit[1];
+                    const validation = validations[ruleName];
+                    if (validation) {
+                        if (!validation(this.getStore().formValues[this.formName], name, ruleParam)) {
+                            result = false;
+                            if (!this.getStore().formErrors[this.formName][name]) {
+                                this.getStore().formErrors[this.formName][name] = [];
+                            }
+                            const message = config.messages[ruleName] || 'Error';
+                            this.getStore().formErrors[this.formName][name].push(message);
+                        }
+                    } else {
+                        console.error('Validation with name `' + ruleName + '` was not found');
+                    }
+                }
+            }
+            if (this.masks[name]) {
+                if (!validations.maskFilled(this.getStore().formValues[this.formName], name, this.getMask(name))) {
+                    result = false;
+                    if (!this.getStore().formErrors[this.formName][name]) {
+                        this.getStore().formErrors[this.formName][name] = [];
+                    }
+                    const message = config.messages.mask || 'Error';
+                    this.getStore().formErrors[this.formName][name].push(message);
+                }
+            }
+
+        }
+        return result;
+    }
 }
 
 export default Form;

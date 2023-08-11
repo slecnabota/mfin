@@ -15,7 +15,6 @@ const max = (values, name, param) => {
     return true;
   }
 };
-
 const email = (values, name, param) => {
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return regexp(values, name, emailPattern)
@@ -35,7 +34,19 @@ const required = (values, name, param) => {
     return false;
   }
 };
+const maskFilled = (values, name, param) => {
+  const value = values[name];
+  const mask = param;
 
+  const maskedValue = mask.replace(/#/g, '_');
+  const sanitizedValue = value.replace(/_/g, '');
+
+  if (sanitizedValue.length !== maskedValue.length) {
+    return false; 
+  } else {
+    return true;
+  }
+};
 export {
-  min, max, required, email, regexp
+  min, max, required, email, regexp, maskFilled
 };

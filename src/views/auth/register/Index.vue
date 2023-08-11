@@ -50,21 +50,20 @@ export default {
             email: "",
             password: "",
             tel: "",
-        }, this.formName)
+        })
         this.form.setRules({
             'email': ['min:5', 'max:100', 'required', 'email'],
             'password': ['min:5', 'max: 10', 'required'],
             'tel': ['required'],
         })
-        this.form.setMask({
-            'tel': '+{7}(000)000-00-00',
-        })
+        this.form.setMasks({
+            'tel': '****',
+        });
     },
     methods: {
         register() {
             if (this.form.validate()) {
-                console.log("Форма прошла валидацию");
-                this.setEmail(this.$store.state.formValues.formRegister.email);
+                // this.setEmail(this.$store.state.formValues.formRegister.email);
                 setIsAuthenticated(true).then(() => {
                     this.$router.push({ name: 'payments' });
                 });
